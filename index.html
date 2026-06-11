@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ahiri — Abandonment Emails Testing Guide</title>
+<meta name="description" content="How we safely test the abandonment email flows on ahiri.ca">
+<style>
+:root{
+  --ink:#1a1a1a; --grey:#5c5f62; --line:#e3e3e6; --accent:#0b6e4f;
+  --card:#f6f6f7; --warn-bg:#fdf3e7; --warn-bar:#c47a18;
+  --tech-bg:#f0f3f5; --tech-bar:#7a8a99; --max:880px;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;color:var(--ink);line-height:1.6;font-size:16px;background:#fff}
+header.hero{background:#111;color:#fff;padding:64px 24px 56px;text-align:center}
+header.hero h1{margin:0 0 10px;font-size:clamp(26px,4.5vw,40px);letter-spacing:-.5px}
+header.hero p{margin:4px 0;color:#c9c9cf;font-size:15px}
+nav.toc{position:sticky;top:0;background:#fff;border-bottom:1px solid var(--line);z-index:10;overflow-x:auto;white-space:nowrap;-webkit-overflow-scrolling:touch}
+nav.toc div{max-width:var(--max);margin:0 auto;padding:0 16px}
+nav.toc a{display:inline-block;padding:13px 12px;color:var(--grey);text-decoration:none;font-size:13.5px;font-weight:600}
+nav.toc a:hover{color:var(--accent)}
+main{max-width:var(--max);margin:0 auto;padding:8px 24px 80px}
+h2{font-size:24px;margin:52px 0 14px;letter-spacing:-.3px;scroll-margin-top:64px}
+h3{font-size:18px;color:var(--accent);margin:34px 0 10px;scroll-margin-top:64px}
+p{margin:0 0 14px}
+.note{background:var(--warn-bg);border-left:4px solid var(--warn-bar);padding:14px 18px;border-radius:0 8px 8px 0;margin:18px 0}
+.tech{background:var(--tech-bg);border-left:4px solid var(--tech-bar);padding:14px 18px;border-radius:0 8px 8px 0;margin:18px 0;font-size:14.5px}
+table{border-collapse:collapse;width:100%;margin:14px 0 22px;font-size:14.5px}
+td,th{border:1px solid var(--line);padding:10px 14px;vertical-align:top;text-align:left}
+th{background:#ededee}
+td.k{background:#f4f5f6;font-weight:600;width:24%;min-width:120px}
+td.num{width:44px;text-align:center;color:var(--grey)}
+tr:nth-child(even) td:not(.k){background:#fafafa}
+.flow{margin:20px 0 26px}
+.fnode{border:1px solid var(--line);border-left:6px solid var(--grey);border-radius:8px;background:var(--card);padding:12px 16px;margin:0 auto;max-width:560px}
+.fnode .kind{font-size:11px;font-weight:700;letter-spacing:.8px;color:var(--grey)}
+.fnode .t{font-weight:700;margin:2px 0}
+.fnode .b{font-size:14px;color:#3d4043}
+.fnode.trigger{border-left-color:var(--accent);background:#e8f4ee}
+.fnode.check{border-left-color:#8a63d2}
+.fnode.wait{border-left-color:#b98900}
+.fnode.email{border-left-color:#2c6ecb;background:#eef2fb}
+.arrow{text-align:center;color:var(--grey);font-size:18px;line-height:1.4;margin:2px 0}
+.shot{border:2px dashed #9aa4ad;border-radius:10px;background:#fbfcfd;padding:42px 20px;text-align:center;margin:18px 0}
+.shot b{color:#7a8a99;font-size:15px}
+.shot span{display:block;color:var(--grey);font-size:13.5px;margin-top:6px}
+.shot img{max-width:100%;border-radius:6px;box-shadow:0 2px 12px rgba(0,0,0,.12)}
+footer{border-top:1px solid var(--line);color:var(--grey);font-size:13px;text-align:center;padding:26px 16px 40px;max-width:var(--max);margin:0 auto}
+@media print{nav.toc{display:none}header.hero{padding:30px}}
+img {width: 100%;}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <h1>Abandonment Emails — Testing Guide</h1>
+  <p>How we safely test the “come back and finish your purchase” emails on ahiri.ca</p>
+  <p>June 2026 · Written for everyone — no technical background needed</p>
+</header>
+
+<nav class="toc"><div>
+  <a href="#basics">Basics</a>
+  <a href="#words">Word list</a>
+  <a href="#seq1">Cart reminder</a>
+  <a href="#seq2">Checkout reminder</a>
+  <a href="#trouble">Troubleshooting</a>
+  <a href="#golive">Go-live</a>
+</div></nav>
+
+<main>
+
+<h2 id="basics">The 1-minute version</h2>
+<p>Ahiri’s store now sends automatic reminder emails to shoppers who almost bought something but left. Before these emails go to real customers, we test them by <b>pretending to be a shopper ourselves</b>: we visit the store, put something in the cart or start paying, then walk away on purpose — and watch the reminder emails arrive in our own inbox.</p>
+<div class="note"><b>Why this is 100% safe on the live store:</b> both email sequences currently have a safety filter — they ONLY send to email addresses containing “+test”. A real customer can never receive a test email. And walking away from a checkout costs nothing: no order is placed, no card is charged.</div>
+
+<h3>The two email sequences</h3>
+<table>
+<tr><td class="k">Cart reminder</td><td>For shoppers who put items in their cart but never started paying. 3 gentle emails: “You left something behind” → “A closer look” → “Last chance”.</td></tr>
+<tr><td class="k">Checkout reminder</td><td>For shoppers who started paying (typed their email at checkout) but didn’t finish. 3 emails: “You were so close” → “Questions about your order?” → “Your order won’t wait forever”.</td></tr>
+</table>
+<p>The difference matters: a shopper who starts the checkout gets the <b>checkout</b> emails only — never both sets. Each shopper gets exactly one sequence.</p>
+
+<h3>The trick that makes testing possible: “+test” emails</h3>
+<p>Gmail has a hidden feature: mail to <b>azriah.aziz+test1@gmail.com</b> or <b>azriah.aziz+test2@gmail.com</b> all lands in the normal azriah.aziz@gmail.com inbox. But the store doesn’t know that — it thinks each one is a <b>different brand-new customer</b>. Think of it as testing with disguises: every test run wears a fresh disguise (+test1, +test2, +test3...), and all the mail still comes home to us.</p>
+<table>
+<tr><td class="k">Rule 1</td><td>Use a fresh number every test (+test6, +test7...). Reusing one makes the store think “I already reminded this person” and it stays silent.</td></tr>
+<tr><td class="k">Rule 2</td><td>Keep a simple log: which number was used for which test.</td></tr>
+<tr><td class="k">Rule 3</td><td>At checkout, always tick “Email me with news and offers”.</td></tr>
+<tr><td class="k">Rule 4</td><td>When testing is finished, delete the +test customers in Shopify so reports stay clean.</td></tr>
+</table>
+
+<h2 id="words">Words you’ll see (plain meanings)</h2>
+<table>
+<tr><td class="k">Automation / flow</td><td>A recipe the store follows by itself: “when X happens, wait a while, then send email Y”. No human presses send.</td></tr>
+<tr><td class="k">Trigger</td><td>The event that starts the recipe — e.g. “a shopper left without buying”.</td></tr>
+<tr><td class="k">Check / condition</td><td>A yes-or-no question inside the recipe — e.g. “does this person’s email contain +test?” If no, the recipe stops for that person.</td></tr>
+<tr><td class="k">Abandoned cart</td><td>Shopper put items in the cart, then left. Like a trolley left in a supermarket aisle.</td></tr>
+<tr><td class="k">Abandoned checkout</td><td>Shopper got to the till, gave their email, then left before paying.</td></tr>
+<tr><td class="k">Run history</td><td>The automation’s diary — one entry per shopper it processed, showing what it decided and why. Our main tool for checking whether a test worked.</td></tr>
+<tr><td class="k">Test fence</td><td>The “+test only” safety filter described above. It must be removed when we go live, or no real customer will ever get the emails.</td></tr>
+</table>
+
+<h3>What a finished test looks like</h3>
+<p>A sequence passes when all four are true: (1) the automation’s run history shows our test shopper went through with every check answering “yes”, (2) all 3 emails arrived in our inbox in the right order, (3) every email looks right on a phone and computer and its button takes you back to your exact cart/checkout, and (4) when we DO complete the purchase, the remaining reminders stop (nobody should be nagged to buy something they already bought).</p>
+
+<h2 id="seq1">Sequence 1 · Cart reminder</h2>
+<p>The recipe as built in Shopify (there it’s called “TEST - Ahiri Cart Abandonment”), in plain English:</p>
+<div class="flow">
+  <div class="fnode trigger"><div class="kind">STARTS WHEN</div><div class="t">A shopper leaves the store without buying</div><div class="b">They looked at a product (or carted it) and left the site.</div></div>
+  <div class="arrow">↓</div>
+  <div class="fnode check"><div class="kind">CHECK</div><div class="t">Is their email a +test address?</div><div class="b">The safety fence. Real customers stop here while we test. Removed at go-live.</div></div>
+  <div class="arrow">↓</div>
+  <div class="fnode check"><div class="kind">CHECK</div><div class="t">Did they abandon a CART (not a checkout)?</div><div class="b">Keeps this sequence from overlapping with the checkout sequence — one shopper, one sequence.</div></div>
+  <div class="arrow">↓</div>
+  <div class="fnode wait"><div class="kind">WAIT</div><div class="t">45 seconds (test value)</div><div class="b">Real timing later: 2 hours, then 24h, then 72h.</div></div>
+  <div class="arrow">↓</div>
+  <div class="fnode check"><div class="kind">CHECK</div><div class="t">Are they still inactive?</div><div class="b">If they came back, added more, started paying, or bought — stop.</div></div>
+  <div class="arrow">↓</div>
+  <div class="fnode email"><div class="kind">EMAILS</div><div class="t">Send the 3 reminder emails</div><div class="b">“You left something behind” → “A closer look” → “Last chance”</div></div>
+</div>
+<div class="note"><b>One catch:</b> the store can only email a cart-abandoner it recognises. A total stranger browsing anonymously can’t be emailed (the store doesn’t know their address yet). So we must first introduce ourselves to the store — steps 1–2 below. No login or account is needed at any point.</div>
+
+<h3>Testing Sequence 1, step by step</h3>
+<table>
+<tr><th class="num">Step</th><th>What to do</th></tr>
+<tr><td class="num">1</td><td>Introduce the test identity to the store: sign up to the newsletter on ahiri.ca using a fresh +test address (or ask whoever has access to add it as a customer in Shopify).</td></tr>
+<tr><td class="num">2</td><td>Make the browser recognisable: open any Ahiri email sent to that address and click a link in it to reach ahiri.ca. (That click is how the store connects this browser to that email address.)</td></tr>
+<tr><td class="num">3</td><td>In that same browser window: open a product and add it to the cart. <b>Do not</b> click Checkout — that would start the other sequence.</td></tr>
+</table>
+<div class="shot"><b>[ Paste screenshot here ]</b><span>Step 3 — the cart on ahiri.ca with the product in it, just before closing the tab</span></div>
+<table>
+<tr><th class="num">Step</th><th>What to do</th></tr>
+<tr><td class="num">4</td><td>Close the tab and walk away. The store may take up to ~30 minutes to decide the visit is over.</td></tr>
+<tr><td class="num">5</td><td>Check it worked: open the automation in Shopify and look at its run history — there should be a new entry for your test, with every check answering “yes”.</td></tr>
+</table>
+<div class="shot"><b>[ Paste screenshot here ]</b><span>Step 5 — the run history entry showing your test with every check answering “yes” (green)</span></div>
+<table>
+<tr><th class="num">Step</th><th>What to do</th></tr>
+<tr><td class="num">6</td><td>Email 1 “You left something behind” arrives after the wait. Check: product photo shows, the button opens your cart, no discount is mentioned.</td></tr>
+</table>
+<div class="shot"><b>[ Paste screenshot here ]</b><span>Step 6 — Email 1 “You left something behind” as received in the Gmail inbox</span></div>
+<table>
+<tr><th class="num">Step</th><th>What to do</th></tr>
+<tr><td class="num">7</td><td>Emails 2 and 3 follow. Read each on both phone and computer.</td></tr>
+<tr><td class="num">8</td><td>The “stop” test: with a fresh +test number, repeat steps 1–4, then go back and empty the cart before the wait ends. No emails should arrive.</td></tr>
+</table>
+
+<h2 id="seq2">Sequence 2 · Checkout reminder</h2>
+<p>The recipe as built (in Shopify it’s called “Recover abandoned checkout”). This one is simpler to test because typing an email at checkout is exactly what makes the shopper reachable.</p>
+<div class="flow">
+  <div class="fnode trigger"><div class="kind">STARTS WHEN</div><div class="t">A shopper starts paying but doesn’t finish</div><div class="b">They typed their email at checkout, then left before completing payment.</div></div>
+  <div class="arrow">↓</div>
+  <div class="fnode check"><div class="kind">CHECK</div><div class="t">Did it happen on the online store?</div><div class="b">Housekeeping — ignores other sales channels.</div></div>
+  <div class="arrow">↓</div>
+  <div class="fnode check"><div class="kind">CHECK</div><div class="t">Is the order worth more than $0?</div><div class="b">Ignores empty or zero-value checkouts.</div></div>
+  <div class="arrow">↓</div>
+  <div class="fnode check"><div class="kind">CHECK</div><div class="t">Is their email a +test address?</div><div class="b">The safety fence. Removed at go-live.</div></div>
+  <div class="arrow">↓</div>
+  <div class="fnode wait"><div class="kind">WAIT</div><div class="t">5 minutes (test value)</div><div class="b">Real timing later: 1 hour, then 12h, then 24–36h.</div></div>
+  <div class="arrow">↓</div>
+  <div class="fnode email"><div class="kind">EMAILS</div><div class="t">Send the 3 reminder emails</div><div class="b">“You were so close” → “Questions about your order?” → “Your order won’t wait forever”</div></div>
+</div>
+
+<h3>Testing Sequence 2, step by step</h3>
+<table>
+<tr><th class="num">Step</th><th>What to do</th></tr>
+<tr><td class="num">1</td><td>Open ahiri.ca in a private/incognito window. Add any product to the cart and click Checkout.</td></tr>
+<tr><td class="num">2</td><td>In the email box, type a fresh +test address (e.g. azriah.aziz+test7@gmail.com) and tick “Email me with news and offers”.</td></tr>
+</table>
+<div class="shot"><img src="screenshot/checkout_step2.png" alt="Step 2 — the checkout Contact box with the +test email typed in and the news-and-offers box ticked"><span>Step 2 — the checkout Contact box with the +test email typed in and the news-and-offers box ticked</span></div>
+<table>
+<tr><th class="num">Step</th><th>What to do</th></tr>
+<tr><td class="num">3</td><td>Fill in your name and address, continue until you can see the card payment boxes.</td></tr>
+<tr><td class="num">4</td><td>Close the tab. <b>Do not pay</b> — never type a real card number during testing.</td></tr>
+</table>
+<div class="shot"><img src="screenshot/checkout_step4.png" alt="Step 4 — the payment step (card boxes visible, nothing typed in) — the moment to close the tab"><span>Step 4 — the payment step (card boxes visible,) — the moment to close the tab</span></div>
+<table>
+<tr><th class="num">Step</th><th>What to do</th></tr>
+<tr><td class="num">5</td><td>Check it worked: the automation’s run history should show a new entry within a few minutes, every check answering “yes”.</td></tr>
+</table>
+<div class=”shot”><img src="screenshot/checkout_step5.png" alt=”Step 5 — the run history entry — all checks yes, including Is their email a +test address?”><span>Step 5 — the run history entry — all checks “yes”, including “Is their email a +test address?”</span></div>
+<table>
+<tr><th class="num">Step</th><th>What to do</th></tr>
+<tr><td class="num">6</td><td>Email 1 “You were so close” arrives ~5 minutes later. Check: your items and total are shown, the button takes you back to your half-finished checkout, the customer-service address is there.</td></tr>
+</table>
+<div class=”shot”><img src="screenshot/checkout_step6.png" alt=”Step 6 — Email 1 You were so close in the inbox, showing the items and the Complete-your-order button”><span>Step 6 — Email 1 “You were so close” in the inbox, showing the items and the Complete-your-order button</span></div>
+<table>
+<tr><th class="num">Step</th><th>What to do</th></tr>
+<tr><td class="num">7</td><td>Emails 2 and 3 follow. Read each on both phone and computer. If an email contains a discount/free-shipping button, click it and confirm the discount appears at checkout by itself.</td></tr>
+<tr><td class="num">8</td><td>The “stop” test: with a fresh +test number, abandon a checkout, wait for Email 1, then go back through its button and finish the purchase using a 100%-off code (ask the owner to create a hidden one). Emails 2 and 3 must NOT arrive. Cancel the $0 order afterwards.</td></tr>
+</table>
+<div class="tech"><b>For the technical person:</b> both safety fences use the field <code>abandonment.customer.defaultEmailAddress.emailAddress</code> with “includes +test”. Don’t point it at the <i>orders</i> email — a new customer has no orders yet, so that field is empty and the check always answers “no” (this exact mistake happened and was fixed on June 11).</div>
+
+<h2 id="trouble">If something doesn’t work</h2>
+<table>
+<tr><th style="width:32%">What you see</th><th>What it means / what to do</th></tr>
+<tr><td class="k">No entry appears in run history</td><td>The store never noticed the abandonment. Checkout test: was the email typed in? Was the +test number fresh? Cart test: the store may need up to 30 minutes, or it didn’t recognise the browser (redo steps 1–2).</td></tr>
+<tr><td class="k">Entry appears, but a check answered “no”</td><td>Open the entry — it shows exactly which question failed and what answer it saw. Usual causes: reused +test number, or (cart test) the store didn’t connect the browser to the email.</td></tr>
+<tr><td class="k">Checks all “yes”, but no email came</td><td>Look in the spam/Promotions folder. Confirm the email itself shows “Active” on the automation page. Confirm the news-and-offers box was ticked.</td></tr>
+<tr><td class="k">Both sequences sent emails for one test</td><td>Should be impossible — tell whoever manages the automations; the “cart, not checkout” check (Sequence 1) needs reviewing.</td></tr>
+<tr><td class="k">An email looks broken on a phone</td><td>The design needs editing in Shopify (Apps → Messaging → Templates), then re-test with a fresh +test number.</td></tr>
+</table>
+
+<h2 id="golive">Going live (after all tests pass)</h2>
+<table>
+<tr><th class="num">✓</th><th>Action</th></tr>
+<tr><td class="num">1</td><td>Every test above passed for both sequences, including the “stop” tests.</td></tr>
+<tr><td class="num">2</td><td>Remove the “+test only” safety fence from BOTH sequences. Until this is done, real customers receive nothing.</td></tr>
+<tr><td class="num">3</td><td>Change the wait times back to real ones — Cart: 2h / 24h / 72h. Checkout: 1h / 12h / 24–36h.</td></tr>
+<tr><td class="num">4</td><td>Rename “TEST - Ahiri Cart Abandonment” (drop the TEST).</td></tr>
+<tr><td class="num">5</td><td>Make sure no other tool (e.g. Brevo, Shopify’s own built-in reminder) is also sending these — a customer must never get two sets of reminders.</td></tr>
+<tr><td class="num">6</td><td>Tidy up: delete +test customers, cancel any $0 test orders, switch off the hidden 100% discount code.</td></tr>
+<tr><td class="num">7</td><td>For the first 2 days, glance at the run history daily to confirm real shoppers are getting their emails.</td></tr>
+<tr><td class="num">8</td><td>After a month, review results (how many came back and bought, how many opened each email) before trying discounts or other experiments.</td></tr>
+</table>
+
+</main>
+
+<footer>
+Email copy, timing and strategy follow the “AHIRI — Priority Flows Overview” document (#1 Abandon Cart, #3 Checkout Recovery).<br>
+Recipes copied from the live Shopify automations on June 11, 2026.
+</footer>
+
+</body>
+</html>
