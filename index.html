@@ -209,6 +209,49 @@
         max-width: 100%;
         border-radius: 6px;
         box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
+        cursor: zoom-in;
+        transition: opacity 0.15s;
+      }
+      .shot img:hover {
+        opacity: 0.88;
+      }
+      #lightbox {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.82);
+        z-index: 999;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+      }
+      #lightbox.open {
+        display: flex;
+      }
+      #lightbox img {
+        max-width: min(96vw, 1100px);
+        max-height: 90vh;
+        border-radius: 8px;
+        box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5);
+        cursor: zoom-out;
+        object-fit: contain;
+        width: auto;
+      }
+      #lightbox-close {
+        position: fixed;
+        top: 18px;
+        right: 22px;
+        color: #fff;
+        font-size: 32px;
+        line-height: 1;
+        cursor: pointer;
+        background: none;
+        border: none;
+        padding: 4px 8px;
+        opacity: 0.8;
+      }
+      #lightbox-close:hover {
+        opacity: 1;
       }
       footer {
         border-top: 1px solid var(--line);
@@ -471,28 +514,50 @@
             to add it as a customer in Shopify).
           </td>
         </tr>
+      </table>
+      <div class="shot">
+        <img
+          src="screenshot/cart_step1.png"
+          alt="Step 1 — newsletter sign-up using the +test address"
+        /><span>Step 1 — newsletter sign-up using the +test address</span>
+      </div>
+      <table>
+        <tr>
+          <th class="num">Step</th>
+          <th>What to do</th>
+        </tr>
         <tr>
           <td class="num">2</td>
           <td>
-            Make the browser recognisable: open any Ahiri email sent to that
-            address and click a link in it to reach ahiri.ca. (That click is how
-            the store connects this browser to that email address.)
+            Open a new <b>incognito / private window</b> in your browser. All
+            remaining steps in this sequence must be done inside that window so
+            there are no leftover cookies from a previous test.
           </td>
         </tr>
         <tr>
           <td class="num">3</td>
           <td>
-            In that same browser window: open a product and add it to the cart.
-            <b>Do not</b> click Checkout — that would start the other sequence.
+            Make the browser recognisable: inside the incognito window, open any
+            Ahiri email sent to that address and click a link in it to reach
+            ahiri.ca. (That click is how the store connects this browser to that
+            email address.)
+          </td>
+        </tr>
+        <tr>
+          <td class="num">4</td>
+          <td>
+            In that same incognito window: open a product and add it to the
+            cart. <b>Do not</b> click Checkout — that would start the other
+            sequence.
           </td>
         </tr>
       </table>
       <div class="shot">
         <img
           src="screenshot/cart_step3.png"
-          alt="Step 3 — the cart on ahiri.ca with the product in it and make sure either login or already signup to the newsletter, just before closing the tab"
+          alt="Step 4 — the cart on ahiri.ca with the product in it, just before closing the tab"
         /><span
-          >Step 3 — the cart on ahiri.ca with the product in it, just before
+          >Step 4 — the cart on ahiri.ca with the product in it, just before
           closing the tab</span
         >
       </div>
@@ -502,14 +567,14 @@
           <th>What to do</th>
         </tr>
         <tr>
-          <td class="num">4</td>
+          <td class="”num”">5</td>
           <td>
             Close the tab and walk away. The store may take up to ~30 minutes to
             decide the visit is over.
           </td>
         </tr>
         <tr>
-          <td class="num">5</td>
+          <td class="”num”">6</td>
           <td>
             Check it worked: open the automation in Shopify and look at its run
             history — there should be a new entry for your test, with every
@@ -517,12 +582,27 @@
           </td>
         </tr>
       </table>
-      <div class=”shot”>
+      <div class="shot">
         <img
           src="screenshot/cart_step5.png"
-          alt=”Step 5 — the run history entry showing your test with every check answering yes (green)”
+          alt="”Step"
+          5
+          —
+          the
+          run
+          history
+          entry
+          showing
+          your
+          test
+          with
+          every
+          check
+          answering
+          yes
+          (green)”
         /><span
-          >Step 5 — the run history entry showing your test with every check
+          >Step 6 — the run history entry showing your test with every check
           answering “yes” (green)</span
         >
       </div>
@@ -532,7 +612,7 @@
           <th>What to do</th>
         </tr>
         <tr>
-          <td class="num">6</td>
+          <td class="”num”">7</td>
           <td>
             Email 1 “You left something behind” arrives after the wait. Check:
             product photo shows, the button opens your cart, no discount is
@@ -540,12 +620,26 @@
           </td>
         </tr>
       </table>
-      <div class=”shot”>
+      <div class="shot">
         <img
           src="screenshot/cart_step6.png"
-          alt=”Step 6 — Email 1 &quot;You left something behind&quot; as received in the Gmail inbox”
+          alt="”Step"
+          6
+          —
+          Email
+          1
+          &quot;You
+          left
+          something
+          behind&quot;
+          as
+          received
+          in
+          the
+          Gmail
+          inbox”
         /><span
-          >Step 6 — Email 1 “You left something behind” as received in the Gmail
+          >Step 7 — Email 1 “You left something behind” as received in the Gmail
           inbox</span
         >
       </div>
@@ -561,7 +655,7 @@
         <tr>
           <td class="num">8</td>
           <td>
-            The “stop” test: with a fresh +test number, repeat steps 1–4, then
+            The “stop” test: with a fresh +test number, repeat steps 1–5, then
             go back and empty the cart before the wait ends. No emails should
             arrive.
           </td>
@@ -691,7 +785,7 @@
           </td>
         </tr>
       </table>
-      <div class="”shot”">
+      <div class="shot">
         <img
           src="screenshot/checkout_step5.png"
           alt="”Step"
@@ -731,7 +825,7 @@
           </td>
         </tr>
       </table>
-      <div class="”shot”">
+      <div class="shot">
         <img
           src="screenshot/checkout_step6.png"
           alt="”Step"
@@ -905,5 +999,39 @@
       Overview” document (#1 Abandon Cart, #3 Checkout Recovery).<br />
       Recipes copied from the live Shopify automations on June 11, 2026.
     </footer>
+
+    <div id="lightbox" role="dialog" aria-modal="true">
+      <button id="lightbox-close" aria-label="Close">&times;</button>
+      <img id="lightbox-img" src="" alt="" />
+    </div>
+
+    <script>
+      const lb = document.getElementById("lightbox");
+      const lbImg = document.getElementById("lightbox-img");
+
+      document.querySelectorAll(".shot img").forEach((img) => {
+        img.addEventListener("click", () => {
+          lbImg.src = img.src;
+          lbImg.alt = img.alt;
+          lb.classList.add("open");
+        });
+      });
+
+      function closeLb() {
+        lb.classList.remove("open");
+        lbImg.src = "";
+      }
+
+      document
+        .getElementById("lightbox-close")
+        .addEventListener("click", closeLb);
+      lbImg.addEventListener("click", closeLb);
+      lb.addEventListener("click", (e) => {
+        if (e.target === lb) closeLb();
+      });
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") closeLb();
+      });
+    </script>
   </body>
 </html>
