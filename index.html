@@ -279,7 +279,7 @@
     <header class="hero">
       <h1>Abandonment Emails — Testing Guide</h1>
       <p>
-        How we safely test the “come back and finish your purchase” emails on
+        How we safely test the “come back and finish your purchase" emails on
         ahiri.ca
       </p>
       <p>June 2026 · Written for everyone — no technical background needed</p>
@@ -291,6 +291,7 @@
         <a href="#words">Word list</a>
         <a href="#seq1">Cart reminder</a>
         <a href="#seq2">Checkout reminder</a>
+        <a href="#seq3">Browse abandonment</a>
         <a href="#trouble">Troubleshooting</a>
         <a href="#golive">Go-live</a>
       </div>
@@ -308,37 +309,46 @@
       <div class="note">
         <b>Why this is 100% safe on the live store:</b> both email sequences
         currently have a safety filter — they ONLY send to email addresses
-        containing “+test”. A real customer can never receive a test email. And
+        containing “+test". A real customer can never receive a test email. And
         walking away from a checkout costs nothing: no order is placed, no card
         is charged.
       </div>
 
-      <h3>The two email sequences</h3>
+      <h3>The three email sequences</h3>
       <table>
         <tr>
-          <td class="k">Cart reminder</td>
+          <td class=""k"">Cart reminder</td>
           <td>
             For shoppers who put items in their cart but never started paying. 3
-            gentle emails: “You left something behind” → “A closer look” → “Last
-            chance”.
+            gentle emails: “You left something behind" → “A closer look" → “Last
+            chance".
           </td>
         </tr>
         <tr>
-          <td class="k">Checkout reminder</td>
+          <td class=""k"">Checkout reminder</td>
           <td>
             For shoppers who started paying (typed their email at checkout) but
-            didn’t finish. 3 emails: “You were so close” → “Questions about your
-            order?” → “Your order won’t wait forever”.
+            didn’t finish. 3 emails: “You were so close" → “Questions about your
+            order?" → “Your order won’t wait forever".
+          </td>
+        </tr>
+        <tr>
+          <td class=""k"">Browse abandonment (Dresses)</td>
+          <td>
+            For logged-in customers who viewed a dress product page but left
+            without adding anything to their cart. 3 emails: “Dresses meant to
+            be noticed" → “How it comes together" → “Worth a second look".
           </td>
         </tr>
       </table>
       <p>
-        The difference matters: a shopper who starts the checkout gets the
-        <b>checkout</b> emails only — never both sets. Each shopper gets exactly
-        one sequence.
+        Priority order: a shopper who reaches checkout gets the
+        <b>checkout</b> sequence only — it suppresses all others. A shopper who
+        adds to cart gets the <b>cart</b> sequence, suppressing browse. Each
+        shopper gets exactly one sequence at a time.
       </p>
 
-      <h3>The trick that makes testing possible: “+test” emails</h3>
+      <h3>The trick that makes testing possible: “+test" emails</h3>
       <p>
         Gmail has a hidden feature: mail to
         <b>azriah.aziz+test1@gmail.com</b> or
@@ -353,7 +363,7 @@
           <td class="k">Rule 1</td>
           <td>
             Use a fresh number every test (+test6, +test7...). Reusing one makes
-            the store think “I already reminded this person” and it stays
+            the store think “I already reminded this person" and it stays
             silent.
           </td>
         </tr>
@@ -363,7 +373,7 @@
         </tr>
         <tr>
           <td class="k">Rule 3</td>
-          <td>At checkout, always tick “Email me with news and offers”.</td>
+          <td>At checkout, always tick “Email me with news and offers".</td>
         </tr>
         <tr>
           <td class="k">Rule 4</td>
@@ -380,21 +390,21 @@
           <td class="k">Automation / flow</td>
           <td>
             A recipe the store follows by itself: “when X happens, wait a while,
-            then send email Y”. No human presses send.
+            then send email Y". No human presses send.
           </td>
         </tr>
         <tr>
           <td class="k">Trigger</td>
           <td>
             The event that starts the recipe — e.g. “a shopper left without
-            buying”.
+            buying".
           </td>
         </tr>
         <tr>
           <td class="k">Check / condition</td>
           <td>
             A yes-or-no question inside the recipe — e.g. “does this person’s
-            email contain +test?” If no, the recipe stops for that person.
+            email contain +test?" If no, the recipe stops for that person.
           </td>
         </tr>
         <tr>
@@ -421,7 +431,7 @@
         <tr>
           <td class="k">Test fence</td>
           <td>
-            The “+test only” safety filter described above. It must be removed
+            The “+test only" safety filter described above. It must be removed
             when we go live, or no real customer will ever get the emails.
           </td>
         </tr>
@@ -431,7 +441,7 @@
       <p>
         A sequence passes when all four are true: (1) the automation’s run
         history shows our test shopper went through with every check answering
-        “yes”, (2) all 3 emails arrived in our inbox in the right order, (3)
+        “yes", (2) all 3 emails arrived in our inbox in the right order, (3)
         every email looks right on a phone and computer and its button takes you
         back to your exact cart/checkout, and (4) when we DO complete the
         purchase, the remaining reminders stop (nobody should be nagged to buy
@@ -441,7 +451,7 @@
       <h2 id="seq1">Sequence 1 · Cart reminder</h2>
       <p>
         The recipe as built in Shopify (there it’s called “TEST - Ahiri Cart
-        Abandonment”), in plain English:
+        Abandonment"), in plain English:
       </p>
       <div class="flow">
         <div class="fnode trigger">
@@ -488,7 +498,7 @@
           <div class="kind">EMAILS</div>
           <div class="t">Send the 3 reminder emails</div>
           <div class="b">
-            “You left something behind” → “A closer look” → “Last chance”
+            “You left something behind" → “A closer look" → “Last chance"
           </div>
         </div>
       </div>
@@ -509,7 +519,10 @@
         <tr>
           <td class="num">1</td>
           <td>
-            Introduce the test identity to the store: Go to ahiri.ca and physically Create a Customer Account (or log in) using a fresh +test address. Note: Do not just use the newsletter popup, since its not available in the moment due to using brevo.
+            Introduce the test identity to the store: Go to ahiri.ca and
+            physically Create a Customer Account (or log in) using a fresh +test
+            address. Note: Do not just use the newsletter popup, since its not
+            available in the moment due to using brevo.
           </td>
         </tr>
       </table>
@@ -535,7 +548,10 @@
         <tr>
           <td class="num">3</td>
           <td>
-            simply log in to the customer account in the incognito window. After logging in, return to the homepage in the same browser tab (for example, by clicking the Ahiri logo) and continue browsing or add an item to the cart.
+            simply log in to the customer account in the incognito window. After
+            logging in, return to the homepage in the same browser tab (for
+            example, by clicking the Ahiri logo) and continue browsing or add an
+            item to the cart.
           </td>
         </tr>
         <tr>
@@ -562,25 +578,25 @@
           <th>What to do</th>
         </tr>
         <tr>
-          <td class="”num”">5</td>
+          <td class=""num"">5</td>
           <td>
             Close the tab and walk away. The store may take up to ~30 minutes to
             decide the visit is over.
           </td>
         </tr>
         <tr>
-          <td class="”num”">6</td>
+          <td class=""num"">6</td>
           <td>
             Check it worked: open the automation in Shopify and look at its run
             history — there should be a new entry for your test, with every
-            check answering “yes”.
+            check answering “yes".
           </td>
         </tr>
       </table>
       <div class="shot">
         <img
           src="screenshot/cart_step5.png"
-          alt="”Step"
+          alt=""Step"
           5
           —
           the
@@ -595,10 +611,10 @@
           check
           answering
           yes
-          (green)”
+          (green)"
         /><span
           >Step 6 — the run history entry showing your test with every check
-          answering “yes” (green)</span
+          answering “yes" (green)</span
         >
       </div>
       <table>
@@ -607,9 +623,9 @@
           <th>What to do</th>
         </tr>
         <tr>
-          <td class="”num”">7</td>
+          <td class=""num"">7</td>
           <td>
-            Email 1 “You left something behind” arrives after the wait. Check:
+            Email 1 “You left something behind" arrives after the wait. Check:
             product photo shows, the button opens your cart, no discount is
             mentioned.
           </td>
@@ -618,7 +634,7 @@
       <div class="shot">
         <img
           src="screenshot/cart_step6.png"
-          alt="”Step"
+          alt=""Step"
           6
           —
           Email
@@ -632,9 +648,9 @@
           in
           the
           Gmail
-          inbox”
+          inbox"
         /><span
-          >Step 7 — Email 1 “You left something behind” as received in the Gmail
+          >Step 7 — Email 1 “You left something behind" as received in the Gmail
           inbox</span
         >
       </div>
@@ -650,7 +666,7 @@
         <tr>
           <td class="num">8</td>
           <td>
-            The “stop” test: with a fresh +test number, repeat steps 1–5, then
+            The “stop" test: with a fresh +test number, repeat steps 1–5, then
             go back and empty the cart before the wait ends. No emails should
             arrive.
           </td>
@@ -660,7 +676,7 @@
       <h2 id="seq2">Sequence 2 · Checkout reminder</h2>
       <p>
         The recipe as built (in Shopify it’s called “Recover abandoned
-        checkout”). This one is simpler to test because typing an email at
+        checkout"). This one is simpler to test because typing an email at
         checkout is exactly what makes the shopper reachable.
       </p>
       <div class="flow">
@@ -701,8 +717,8 @@
           <div class="kind">EMAILS</div>
           <div class="t">Send the 3 reminder emails</div>
           <div class="b">
-            “You were so close” → “Questions about your order?” → “Your order
-            won’t wait forever”
+            “You were so close" → “Questions about your order?" → “Your order
+            won’t wait forever"
           </div>
         </div>
       </div>
@@ -725,7 +741,7 @@
           <td>
             In the email box, type a fresh +test address (e.g.
             azriah.aziz+test7@gmail.com) and tick “Email me with news and
-            offers”.
+            offers".
           </td>
         </tr>
       </table>
@@ -776,14 +792,14 @@
           <td class="num">5</td>
           <td>
             Check it worked: the automation’s run history should show a new
-            entry within a few minutes, every check answering “yes”.
+            entry within a few minutes, every check answering “yes".
           </td>
         </tr>
       </table>
       <div class="shot">
         <img
           src="screenshot/checkout_step5.png"
-          alt="”Step"
+          alt=""Step"
           5
           —
           the
@@ -800,10 +816,10 @@
           email
           a
           +test
-          address?”
+          address?"
         /><span
-          >Step 5 — the run history entry — all checks “yes”, including “Is
-          their email a +test address?”</span
+          >Step 5 — the run history entry — all checks “yes", including “Is
+          their email a +test address?"</span
         >
       </div>
       <table>
@@ -814,7 +830,7 @@
         <tr>
           <td class="num">6</td>
           <td>
-            Email 1 “You were so close” arrives ~5 minutes later. Check: your
+            Email 1 “You were so close" arrives ~5 minutes later. Check: your
             items and total are shown, the button takes you back to your
             half-finished checkout, the customer-service address is there.
           </td>
@@ -823,7 +839,7 @@
       <div class="shot">
         <img
           src="screenshot/checkout_step6.png"
-          alt="”Step"
+          alt=""Step"
           6
           —
           Email
@@ -841,9 +857,9 @@
           and
           the
           Complete-your-order
-          button”
+          button"
         /><span
-          >Step 6 — Email 1 “You were so close” in the inbox, showing the items
+          >Step 6 — Email 1 “You were so close" in the inbox, showing the items
           and the Complete-your-order button</span
         >
       </div>
@@ -863,7 +879,7 @@
         <tr>
           <td class="num">8</td>
           <td>
-            The “stop” test: with a fresh +test number, abandon a checkout, wait
+            The “stop" test: with a fresh +test number, abandon a checkout, wait
             for Email 1, then go back through its button and finish the purchase
             using a 100%-off code (ask the owner to create a hidden one). Emails
             2 and 3 must NOT arrive. Cancel the $0 order afterwards.
@@ -873,9 +889,180 @@
       <div class="tech">
         <b>For the technical person:</b> both safety fences use the field
         <code>abandonment.customer.defaultEmailAddress.emailAddress</code> with
-        “includes +test”. Don’t point it at the <i>orders</i> email — a new
+        “includes +test". Don’t point it at the <i>orders</i> email — a new
         customer has no orders yet, so that field is empty and the check always
-        answers “no” (this exact mistake happened and was fixed on June 11).
+        answers “no" (this exact mistake happened and was fixed on June 11).
+      </div>
+
+      <h2 id="seq3">Sequence 3 · Browse abandonment (Dresses)</h2>
+      <p>
+        This sequence targets logged-in customers who viewed at least one dress
+        product page but left without adding anything to their cart. Unlike the
+        cart and checkout flows, the shopper hasn’t committed to anything yet —
+        so the tone stays light and the emails add value rather than push.
+      </p>
+      <div class="note">
+        <b>Identity requirement:</b> Shopify can only track browse behaviour for
+        customers it can identify. You must be logged in to a customer account
+        (or have a session the store recognises) before navigating to the
+        dresses page, otherwise the automation never fires.
+      </div>
+      <div class="flow">
+        <div class="fnode trigger">
+          <div class="kind">STARTS WHEN</div>
+          <div class="t">A known customer views a Dresses product page</div>
+          <div class="b">
+            They are logged in (or identified via session), browse a dress, and
+            leave without adding it to their cart.
+          </div>
+        </div>
+        <div class="arrow">↓</div>
+        <div class="fnode check">
+          <div class="kind">CHECK</div>
+          <div class="t">Did they NOT add to cart within the flow window?</div>
+          <div class="b">
+            If they added to cart the browse flow stops — the cart abandonment
+            flow takes over.
+          </div>
+        </div>
+        <div class="arrow">↓</div>
+        <div class="fnode check">
+          <div class="kind">CHECK</div>
+          <div class="t">Is their email a +test address?</div>
+          <div class="b">The safety fence. Removed at go-live.</div>
+        </div>
+        <div class="arrow">↓</div>
+        <div class="fnode wait">
+          <div class="kind">WAIT</div>
+          <div class="t">5 minutes (test value)</div>
+          <div class="b">Real timing: 2–6 hours, then 24 hours, then 7 days.</div>
+        </div>
+        <div class="arrow">↓</div>
+        <div class="fnode email">
+          <div class="kind">EMAILS</div>
+          <div class="t">Send the 3 browse reminder emails</div>
+          <div class="b">
+            “Dresses meant to be noticed" → “How it comes together" → “Worth a
+            second look"
+          </div>
+        </div>
+      </div>
+
+      <h3>Testing Sequence 3, step by step</h3>
+      <table>
+        <tr>
+          <th class="num">Step</th>
+          <th>What to do</th>
+        </tr>
+        <tr>
+          <td class="num">1</td>
+          <td>
+            Visit the live Ahiri store at ahiri.ca.
+          </td>
+        </tr>
+        <tr>
+          <td class="num">2</td>
+          <td>
+            Log in to a customer account using your +test email address (e.g.
+            azriah.aziz+test8@gmail.com). This is the critical identity step —
+            without it, Shopify cannot connect your browse session to an email
+            address and the automation will never fire.
+          </td>
+        </tr>
+      </table>
+      <div class="shot">
+        <img
+          src="screenshot/browse_step2.png"
+          alt="Step 2 — Ahiri sign-in page with +test email entered and 'Email me with news and offers' ticked"
+        /><span>Step 2 — sign in with your +test address and tick “Email me with news and offers"</span>
+      </div>
+      <table>
+        <tr>
+          <th class="num">Step</th>
+          <th>What to do</th>
+        </tr>
+        <tr>
+          <td class="num">3</td>
+          <td>
+            Navigate to the Dresses collection page:
+            <a href="https://ahiri.ca/collections/dresses" target="_blank" rel="noopener noreferrer">ahiri.ca/collections/dresses.</a>
+          </td>
+        </tr>
+        <tr>
+          <td class="num">4</td>
+          <td>
+            <b>The critical step:</b> click on at least one specific dress to
+            open its full product page. Stay on it for a few seconds so the
+            store registers the view — do not just scroll past on the
+            collection page.
+          </td>
+        </tr>
+      </table>
+      <div class="shot">
+        <img
+          src="screenshot/browse_step4.png"
+          alt="Step 4 — the Dresses collection page at ahiri.ca/collections/dresses"
+        /><span>Step 4 — navigate to the Dresses collection and click into a product page; linger for a few seconds</span>
+      </div>
+      <table>
+        <tr>
+          <th class="num">Step</th>
+          <th>What to do</th>
+        </tr>
+        <tr>
+          <td class="num">5</td>
+          <td>
+            Close the tab completely <b>without</b> adding the dress to your
+            cart. Adding to cart would exit this flow and start the cart
+            abandonment sequence instead.
+          </td>
+        </tr>
+        <tr>
+          <td class="num">6</td>
+          <td>
+            Check it worked: open the browse abandonment automation in Shopify
+            and look at its run history — there should be a new entry for your
+            +test address with every check answering “yes".
+          </td>
+        </tr>
+      </table>
+      <div class="shot">
+        <img
+          src="screenshot/browse_step6.png"
+          alt="Step 6 — Shopify run history showing the browse abandonment automation succeeded for afiqvdx20+test840@gmail.com with all conditions true"
+        /><span>Step 6 — run history entry showing the +test shopper with every check “yes" (green)</span>
+      </div>
+      <table>
+        <tr>
+          <th class="num">Step</th>
+          <th>What to do</th>
+        </tr>
+        <tr>
+          <td class="num">7</td>
+          <td>
+            Email 1 “Dresses meant to be noticed" arrives after the wait.
+            Check: hero image shows, the button links to the dresses collection
+            or the specific product viewed, no discount is mentioned.
+          </td>
+        </tr>
+        <tr>
+          <td class="num">8</td>
+          <td>Emails 2 and 3 follow. Read each on both phone and computer.</td>
+        </tr>
+        <tr>
+          <td class="num">9</td>
+          <td>
+            The “stop" test: with a fresh +test number, repeat steps 1–5, then
+            go back and add the dress to the cart before the wait ends. The
+            browse emails must NOT arrive (the cart flow takes over instead).
+          </td>
+        </tr>
+      </table>
+      <div class="shot">
+        <img
+          src="screenshot/browse_step7.png"
+          alt="Step 7 — Email 1 ‘Dresses meant to be noticed’ from Ahiri Inc. as received in Gmail inbox"
+        /><span>Step 7 — Email 1 “Dresses meant to be noticed" as received in the Gmail inbox</span>
       </div>
 
       <h2 id="trouble">If something doesn’t work</h2>
@@ -894,7 +1081,7 @@
           </td>
         </tr>
         <tr>
-          <td class="k">Entry appears, but a check answered “no”</td>
+          <td class="k">Entry appears, but a check answered “no"</td>
           <td>
             Open the entry — it shows exactly which question failed and what
             answer it saw. Usual causes: reused +test number, or (cart test) the
@@ -902,10 +1089,10 @@
           </td>
         </tr>
         <tr>
-          <td class="k">Checks all “yes”, but no email came</td>
+          <td class="k">Checks all “yes", but no email came</td>
           <td>
             Look in the spam/Promotions folder. Confirm the email itself shows
-            “Active” on the automation page. Confirm the news-and-offers box was
+            “Active" on the automation page. Confirm the news-and-offers box was
             ticked.
           </td>
         </tr>
@@ -913,7 +1100,7 @@
           <td class="k">Both sequences sent emails for one test</td>
           <td>
             Should be impossible — tell whoever manages the automations; the
-            “cart, not checkout” check (Sequence 1) needs reviewing.
+            “cart, not checkout" check (Sequence 1) needs reviewing.
           </td>
         </tr>
         <tr>
@@ -934,14 +1121,14 @@
         <tr>
           <td class="num">1</td>
           <td>
-            Every test above passed for both sequences, including the “stop”
+            Every test above passed for both sequences, including the “stop"
             tests.
           </td>
         </tr>
         <tr>
           <td class="num">2</td>
           <td>
-            Remove the “+test only” safety fence from BOTH sequences. Until this
+            Remove the “+test only" safety fence from BOTH sequences. Until this
             is done, real customers receive nothing.
           </td>
         </tr>
@@ -954,7 +1141,7 @@
         </tr>
         <tr>
           <td class="num">4</td>
-          <td>Rename “TEST - Ahiri Cart Abandonment” (drop the TEST).</td>
+          <td>Rename “TEST - Ahiri Cart Abandonment" (drop the TEST).</td>
         </tr>
         <tr>
           <td class="num">5</td>
@@ -991,7 +1178,7 @@
 
     <footer>
       Email copy, timing and strategy follow the “AHIRI — Priority Flows
-      Overview” document (#1 Abandon Cart, #3 Checkout Recovery).<br />
+      Overview" document (#1 Abandon Cart, #3 Checkout Recovery).<br />
       Recipes copied from the live Shopify automations on June 11, 2026.
     </footer>
 
