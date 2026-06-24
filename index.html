@@ -3,10 +3,10 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Ahiri — Abandonment Emails Testing Guide</title>
+    <title>Ahiri — Email Automations Testing Guide</title>
     <meta
       name="description"
-      content="How we safely test the abandonment email flows on ahiri.ca"
+      content="How we safely test the email automations on ahiri.ca"
     />
     <style>
       :root {
@@ -277,9 +277,9 @@
   </head>
   <body>
     <header class="hero">
-      <h1>Abandonment Emails — Testing Guide</h1>
+      <h1>Email Automations — Testing Guide</h1>
       <p>
-        How we safely test the “come back and finish your purchase" emails on
+        How we safely test the email automations on
         ahiri.ca
       </p>
       <p>June 2026 · Written for everyone — no technical background needed</p>
@@ -292,6 +292,7 @@
         <a href="#seq1">Cart reminder</a>
         <a href="#seq2">Checkout reminder</a>
         <a href="#seq3">Browse abandonment</a>
+        <a href="#seq4">Welcome series</a>
         <a href="#trouble">Troubleshooting</a>
         <a href="#golive">Go-live</a>
       </div>
@@ -1078,7 +1079,280 @@
         /><span>Step 7 — Email 1 “Dresses meant to be noticed" as received in the Gmail inbox</span>
       </div>
 
-      <h2 id="trouble">If something doesn’t work</h2>
+      <h2 id="seq4">Sequence 4 · Nurture Welcome Series</h2>
+      <p>
+        <b>Objective:</b> To verify that the Welcome Automation successfully
+        delivers the onboarding emails on schedule, while automatically
+        protecting the customer experience by stopping the flow if a purchase
+        is made.
+      </p>
+      <div class="tech">
+        <b>Developer Note on Testing:</b> For the purpose of live UAT (User
+        Acceptance Testing) and to validate the logic in a single session, all
+        multi-day delay blocks have been temporarily compressed to
+        <b>2 minutes</b>. Additionally, a safety filter is active so this test
+        will only trigger for email addresses containing "+test". Before
+        pushing to production, these delays will be reverted to the live
+        schedule (3 days, 4 days, and 7 days).
+      </div>
+
+      <div class="flow">
+        <div class="fnode trigger">
+          <div class="kind">STARTS WHEN</div>
+          <div class="t">A new user subscribes to the mailing list</div>
+          <div class="b">
+            They sign up via the website footer newsletter form.
+          </div>
+        </div>
+        <div class="arrow">↓</div>
+        <div class="fnode check">
+          <div class="kind">CHECK</div>
+          <div class="t">Is their email a +test address?</div>
+          <div class="b">The safety fence. Removed at go-live.</div>
+        </div>
+        <div class="arrow">↓</div>
+        <div class="fnode email">
+          <div class="kind">EMAIL 1</div>
+          <div class="t">Welcome + 15% Off</div>
+          <div class="b">Delivered immediately upon subscribing.</div>
+        </div>
+        <div class="arrow">↓</div>
+        <div class="fnode wait">
+          <div class="kind">WAIT</div>
+          <div class="t">3 days (test: 2 minutes)</div>
+          <div class="b">Then check: has the customer made a purchase?</div>
+        </div>
+        <div class="arrow">↓</div>
+        <div class="fnode check">
+          <div class="kind">CHECK</div>
+          <div class="t">Does the customer have 0 orders?</div>
+          <div class="b">
+            If they bought something, the flow stops — no more nurture emails.
+          </div>
+        </div>
+        <div class="arrow">↓</div>
+        <div class="fnode email">
+          <div class="kind">EMAIL 2</div>
+          <div class="t">Brand Ethos</div>
+          <div class="b">Delivered if the customer still hasn't purchased.</div>
+        </div>
+        <div class="arrow">↓</div>
+        <div class="fnode wait">
+          <div class="kind">WAIT</div>
+          <div class="t">4 days (test: 2 minutes)</div>
+          <div class="b">Then check purchase history again.</div>
+        </div>
+        <div class="arrow">↓</div>
+        <div class="fnode check">
+          <div class="kind">CHECK</div>
+          <div class="t">Does the customer still have 0 orders?</div>
+          <div class="b">If they bought, the flow stops here.</div>
+        </div>
+        <div class="arrow">↓</div>
+        <div class="fnode email">
+          <div class="kind">EMAIL 3</div>
+          <div class="t">Seasonal Hero Focus</div>
+          <div class="b">Delivered if the customer still hasn't purchased.</div>
+        </div>
+        <div class="arrow">↓</div>
+        <div class="fnode wait">
+          <div class="kind">WAIT</div>
+          <div class="t">7 days (test: 2 minutes)</div>
+          <div class="b">Final purchase history check.</div>
+        </div>
+        <div class="arrow">↓</div>
+        <div class="fnode check">
+          <div class="kind">CHECK</div>
+          <div class="t">Does the customer still have 0 orders?</div>
+          <div class="b">Last chance — if they bought, the flow stops.</div>
+        </div>
+        <div class="arrow">↓</div>
+        <div class="fnode email">
+          <div class="kind">EMAIL 4</div>
+          <div class="t">First Purchase Nudge</div>
+          <div class="b">Final email. The flow ends here.</div>
+        </div>
+      </div>
+
+      <h3>How to Test This Yourself (Manager / Client Guide)</h3>
+      <p>
+        Want to see the automation in action? Follow these steps to trigger the
+        welcome series and watch the emails arrive:
+      </p>
+      <table>
+        <tr>
+          <th class="num">Step</th>
+          <th>What to do</th>
+        </tr>
+        <tr>
+          <td class="num">1</td>
+          <td>
+            <b>Go to the Website:</b> Open a new browser tab and navigate to
+            <a href="https://ahiri.ca/?_ab=0&_fd=0&_sc=1&preview_theme_id=189354508569" target="_blank" rel="noopener noreferrer">the Ahiri preview site</a>.
+            Scroll down to the email newsletter signup form
+            (usually in the footer).
+          </td>
+        </tr>
+      </table>
+      <table>
+        <tr>
+          <th class="num">Step</th>
+          <th>What to do</th>
+        </tr>
+        <tr>
+          <td class="num">2</td>
+          <td>
+            <b>Use the "secret" testing email:</b> Enter your normal email address,
+            but add <b>+test</b> right before the @ symbol. Example: if your email
+            is sarah@gmail.com, enter <b>sarah+test@gmail.com</b>. The system
+            recognises it as a test and lets you into the accelerated flow, but the
+            emails still arrive in your normal sarah@gmail.com inbox.
+          </td>
+        </tr>
+      </table>
+      <div class="shot">
+        <img
+          src="screenshot/welcome_step2.png"
+          alt="Step 2 — entering the +test email address into the newsletter signup form"
+        /><span>Step 2 — enter your +test email address and subscribe</span>
+      </div>
+      <table>
+        <tr>
+          <th class="num">Step</th>
+          <th>What to do</th>
+        </tr>
+        <tr>
+          <td class="num">3</td>
+          <td>
+            <b>Watch your inbox:</b><br />
+            Minute 0 — Email 1 arrives immediately upon subscribing.<br />
+            Minute 2 — Email 2 arrives.<br />
+            Minute 4 — Email 3 arrives.<br />
+            Minute 6 — Email 4 arrives, and the test is complete.
+          </td>
+        </tr>
+      </table>
+      <div class="shot">
+        <img
+          src="screenshot/welcome_step3.png"
+          alt="Step 3 — Gmail inbox showing all 4 welcome emails received"
+        /><span>Step 3 — all 4 welcome emails arriving in the inbox</span>
+      </div>
+
+      <h3>Test Scenario A: The Full Nurture Journey (customer does not buy)</h3>
+      <table>
+        <tr>
+          <th class="num">Step</th>
+          <th>What happens</th>
+        </tr>
+        <tr>
+          <td class="num">1</td>
+          <td>
+            A new user subscribes to the mailing list via the website footer.
+          </td>
+        </tr>
+        <tr>
+          <td class="num">→</td>
+          <td>
+            <b>System Action:</b> Email 1 (Welcome + 15% Off) is delivered
+            immediately.
+          </td>
+        </tr>
+        <tr>
+          <td class="num">2</td>
+          <td>
+            The system waits for the designated delay (tested at 2 minutes) and
+            checks the user's purchase history. Since they have 0 orders, it
+            proceeds.
+          </td>
+        </tr>
+        <tr>
+          <td class="num">→</td>
+          <td>
+            <b>System Action:</b> Email 2 (Brand Ethos) is delivered.
+          </td>
+        </tr>
+        <tr>
+          <td class="num">3</td>
+          <td>
+            The system waits for the next delay (tested at 2 minutes) and checks
+            purchase history again. Since they still have 0 orders, it proceeds.
+          </td>
+        </tr>
+        <tr>
+          <td class="num">→</td>
+          <td>
+            <b>System Action:</b> Email 3 (Seasonal Hero Focus) is delivered.
+          </td>
+        </tr>
+        <tr>
+          <td class="num">4</td>
+          <td>
+            The system waits for the final delay (tested at 2 minutes) and checks
+            purchase history one last time. With 0 orders found, it proceeds.
+          </td>
+        </tr>
+        <tr>
+          <td class="num">→</td>
+          <td>
+            <b>System Action:</b> Email 4 (First Purchase Nudge) is delivered,
+            and the flow ends.
+          </td>
+        </tr>
+      </table>
+      <div class="note" style="border-left-color: var(--accent); background: #e8f4ee;">
+        <b>Status: PASSED.</b> All timing intervals, conditions, and email
+        deliveries executed flawlessly during the live testing window.
+      </div>
+
+      <h3>Test Scenario B: The Purchase Safety Net (customer buys early)</h3>
+      <table>
+        <tr>
+          <th class="num">Step</th>
+          <th>What happens</th>
+        </tr>
+        <tr>
+          <td class="num">1</td>
+          <td>
+            A new user subscribes to the mailing list.
+          </td>
+        </tr>
+        <tr>
+          <td class="num">→</td>
+          <td>
+            <b>System Action:</b> Email 1 (Welcome + 15% Off) is delivered
+            immediately.
+          </td>
+        </tr>
+        <tr>
+          <td class="num">2</td>
+          <td>
+            The customer decides to use their welcome discount and completes a
+            purchase.
+          </td>
+        </tr>
+        <tr>
+          <td class="num">3</td>
+          <td>
+            The system runs its next scheduled safety check. It detects that the
+            user now has 1 order on their account.
+          </td>
+        </tr>
+        <tr>
+          <td class="num">→</td>
+          <td>
+            <b>System Action:</b> The system immediately removes the customer
+            from the welcome flow. All subsequent emails are cancelled.
+          </td>
+        </tr>
+      </table>
+      <div class="note" style="border-left-color: var(--accent); background: #e8f4ee;">
+        <b>Status: PASSED.</b> This ensures buyers are seamlessly transitioned
+        out of the nurture phase and won't receive unnecessary discount
+        reminders.
+      </div>
+
+      <h2 id="trouble">If something doesn't work</h2>
       <table>
         <tr>
           <th style="width: 32%">What you see</th>
@@ -1190,9 +1464,9 @@
     </main>
 
     <footer>
-      Email copy, timing and strategy follow the “AHIRI — Priority Flows
-      Overview" document (#1 Abandon Cart, #3 Checkout Recovery).<br />
-      Recipes copied from the live Shopify automations on June 11, 2026.
+      Email copy, timing and strategy follow the "AHIRI — Priority Flows
+      Overview" document (#1 Abandon Cart, #2 Welcome Refresh, #3 Checkout Recovery).<br />
+      Recipes copied from the live Shopify automations on June 2026.
     </footer>
 
     <div id="lightbox" role="dialog" aria-modal="true">
