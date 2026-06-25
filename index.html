@@ -1083,17 +1083,18 @@
       <p>
         <b>Objective:</b> To verify that the Welcome Automation successfully
         delivers the onboarding emails on schedule, while automatically
-        protecting the customer experience by stopping the flow if a purchase
-        is made.
+        protecting the customer experience by stopping the final nudge if a
+        purchase is made.
       </p>
       <div class="tech">
         <b>Developer Note on Testing:</b> For the purpose of live UAT (User
-        Acceptance Testing) and to validate the logic in a single session, all
-        multi-day delay blocks have been temporarily compressed to
-        <b>2 minutes</b>. Additionally, a safety filter is active so this test
-        will only trigger for email addresses containing "+test". Before
-        pushing to production, these delays will be reverted to the live
-        schedule (3 days, 4 days, and 7 days).
+        Acceptance Testing) and to validate the logic, the multi-day delay
+        blocks have been compressed. The first two waits are set to
+        <b>2 minutes</b>, and the final wait is set to <b>24 hours</b>.
+        Additionally, a safety filter is active so this test will only trigger
+        for email addresses containing "+test". Before pushing to production,
+        these delays will be reverted to the live schedule (3 days, 4 days,
+        and 7 days).
       </div>
 
       <div class="flow">
@@ -1108,7 +1109,10 @@
         <div class="fnode check">
           <div class="kind">CHECK</div>
           <div class="t">Is their email a +test address?</div>
-          <div class="b">The safety fence. Removed at go-live.</div>
+          <div class="b">
+            The safety fence. Real customers stop here while we test. Removed
+            at go-live.
+          </div>
         </div>
         <div class="arrow">↓</div>
         <div class="fnode email">
@@ -1120,64 +1124,60 @@
         <div class="fnode wait">
           <div class="kind">WAIT</div>
           <div class="t">3 days (test: 2 minutes)</div>
-          <div class="b">Then check: has the customer made a purchase?</div>
+        </div>
+        <div class="arrow">↓</div>
+        <div class="fnode email">
+          <div class="kind">EMAIL 2</div>
+          <div class="t">Brand Ethos</div>
+          <div class="b">
+            Delivered to all new subscribers to introduce the brand.
+          </div>
+        </div>
+        <div class="arrow">↓</div>
+        <div class="fnode wait">
+          <div class="kind">WAIT</div>
+          <div class="t">4 days (test: 2 minutes)</div>
+        </div>
+        <div class="arrow">↓</div>
+        <div class="fnode email">
+          <div class="kind">EMAIL 3</div>
+          <div class="t">Seasonal Hero Focus</div>
+          <div class="b">
+            Delivered to all new subscribers to highlight key products.
+          </div>
+        </div>
+        <div class="arrow">↓</div>
+        <div class="fnode wait">
+          <div class="kind">WAIT</div>
+          <div class="t">7 days (test: 24 hours)</div>
+          <div class="b">
+            Then check: has the customer made a purchase yet?
+          </div>
         </div>
         <div class="arrow">↓</div>
         <div class="fnode check">
           <div class="kind">CHECK</div>
           <div class="t">Does the customer have 0 orders?</div>
           <div class="b">
-            If they bought something, the flow stops — no more nurture emails.
+            If they bought something, the flow stops — they do not receive the
+            final discount nudge.
           </div>
-        </div>
-        <div class="arrow">↓</div>
-        <div class="fnode email">
-          <div class="kind">EMAIL 2</div>
-          <div class="t">Brand Ethos</div>
-          <div class="b">Delivered if the customer still hasn't purchased.</div>
-        </div>
-        <div class="arrow">↓</div>
-        <div class="fnode wait">
-          <div class="kind">WAIT</div>
-          <div class="t">4 days (test: 2 minutes)</div>
-          <div class="b">Then check purchase history again.</div>
-        </div>
-        <div class="arrow">↓</div>
-        <div class="fnode check">
-          <div class="kind">CHECK</div>
-          <div class="t">Does the customer still have 0 orders?</div>
-          <div class="b">If they bought, the flow stops here.</div>
-        </div>
-        <div class="arrow">↓</div>
-        <div class="fnode email">
-          <div class="kind">EMAIL 3</div>
-          <div class="t">Seasonal Hero Focus</div>
-          <div class="b">Delivered if the customer still hasn't purchased.</div>
-        </div>
-        <div class="arrow">↓</div>
-        <div class="fnode wait">
-          <div class="kind">WAIT</div>
-          <div class="t">7 days (test: 2 minutes)</div>
-          <div class="b">Final purchase history check.</div>
-        </div>
-        <div class="arrow">↓</div>
-        <div class="fnode check">
-          <div class="kind">CHECK</div>
-          <div class="t">Does the customer still have 0 orders?</div>
-          <div class="b">Last chance — if they bought, the flow stops.</div>
         </div>
         <div class="arrow">↓</div>
         <div class="fnode email">
           <div class="kind">EMAIL 4</div>
           <div class="t">First Purchase Nudge</div>
-          <div class="b">Final email. The flow ends here.</div>
+          <div class="b">
+            Final email delivered only if they still haven't purchased. The
+            flow ends here.
+          </div>
         </div>
       </div>
 
       <h3>How to Test This Yourself (Manager / Client Guide)</h3>
       <p>
         Want to see the automation in action? Follow these steps to trigger the
-        welcome series and watch the emails arrive:
+        welcome series:
       </p>
       <table>
         <tr>
@@ -1202,11 +1202,12 @@
         <tr>
           <td class="num">2</td>
           <td>
-            <b>Use the "secret" testing email:</b> Enter your normal email address,
-            but add <b>+test</b> right before the @ symbol. Example: if your email
-            is sarah@gmail.com, enter <b>sarah+test@gmail.com</b>. The system
-            recognises it as a test and lets you into the accelerated flow, but the
-            emails still arrive in your normal sarah@gmail.com inbox.
+            <b>Use the "secret" testing email:</b> Enter your normal email
+            address, but add <b>+test</b> right before the @ symbol. Example:
+            if your email is sarah@gmail.com, enter
+            <b>sarah+test@gmail.com</b>. The system recognises it as a test and
+            lets you into the accelerated flow, but the emails still arrive in
+            your normal inbox.
           </td>
         </tr>
       </table>
@@ -1227,17 +1228,32 @@
             <b>Watch your inbox:</b><br />
             Minute 0 — Email 1 arrives immediately upon subscribing.<br />
             Minute 2 — Email 2 arrives.<br />
-            Minute 4 — Email 3 arrives.<br />
-            Minute 6 — Email 4 arrives, and the test is complete.
+            Minute 4 — Email 3 arrives.
           </td>
         </tr>
       </table>
       <div class="shot">
         <img
           src="screenshot/welcome_step3.png"
-          alt="Step 3 — Gmail inbox showing all 4 welcome emails received"
-        /><span>Step 3 — all 4 welcome emails arriving in the inbox</span>
+          alt="Step 3 — Gmail inbox showing the first 3 welcome emails received"
+        /><span>Step 3 — the first 3 welcome emails arriving in the inbox</span>
       </div>
+      <table>
+        <tr>
+          <th class="num">Step</th>
+          <th>What to do</th>
+        </tr>
+        <tr>
+          <td class="num">4</td>
+          <td>
+            <b>Wait 24 Hours:</b> Because the final delay is set to 24 hours,
+            the flow will pause here. The next day, you will receive Email 4,
+            completing the test. (You can also verify this by checking the
+            "Recent Runs" in Shopify Flow to see the workflow in a "Waiting"
+            state).
+          </td>
+        </tr>
+      </table>
 
       <h3>Test Scenario A: The Full Nurture Journey (customer does not buy)</h3>
       <table>
@@ -1261,9 +1277,7 @@
         <tr>
           <td class="num">2</td>
           <td>
-            The system waits for the designated delay (tested at 2 minutes) and
-            checks the user's purchase history. Since they have 0 orders, it
-            proceeds.
+            The system waits for the designated delay (tested at 2 mins).
           </td>
         </tr>
         <tr>
@@ -1275,8 +1289,7 @@
         <tr>
           <td class="num">3</td>
           <td>
-            The system waits for the next delay (tested at 2 minutes) and checks
-            purchase history again. Since they still have 0 orders, it proceeds.
+            The system waits for the next delay (tested at 2 mins).
           </td>
         </tr>
         <tr>
@@ -1288,8 +1301,8 @@
         <tr>
           <td class="num">4</td>
           <td>
-            The system waits for the final delay (tested at 2 minutes) and checks
-            purchase history one last time. With 0 orders found, it proceeds.
+            The system waits for the final delay (tested at 24 hours) and
+            checks the purchase history. With 0 orders found, it proceeds.
           </td>
         </tr>
         <tr>
@@ -1301,8 +1314,8 @@
         </tr>
       </table>
       <div class="note" style="border-left-color: var(--accent); background: #e8f4ee;">
-        <b>Status: PASSED.</b> All timing intervals, conditions, and email
-        deliveries executed flawlessly during the live testing window.
+        <b>Status: PASSED.</b> All timing intervals and email deliveries
+        executed flawlessly during testing.
       </div>
 
       <h3>Test Scenario B: The Purchase Safety Net (customer buys early)</h3>
@@ -1314,42 +1327,37 @@
         <tr>
           <td class="num">1</td>
           <td>
-            A new user subscribes to the mailing list.
-          </td>
-        </tr>
-        <tr>
-          <td class="num">→</td>
-          <td>
-            <b>System Action:</b> Email 1 (Welcome + 15% Off) is delivered
-            immediately.
+            A new user subscribes to the mailing list and receives Emails 1, 2,
+            and 3 through the accelerated test intervals.
           </td>
         </tr>
         <tr>
           <td class="num">2</td>
           <td>
-            The customer decides to use their welcome discount and completes a
-            purchase.
+            During the final 24-hour waiting period, the customer decides to
+            use their welcome discount and completes a purchase.
           </td>
         </tr>
         <tr>
           <td class="num">3</td>
           <td>
-            The system runs its next scheduled safety check. It detects that the
-            user now has 1 order on their account.
+            After 24 hours, the system resumes and runs its scheduled safety
+            check. It detects that the user now has 1 order on their account.
           </td>
         </tr>
         <tr>
           <td class="num">→</td>
           <td>
-            <b>System Action:</b> The system immediately removes the customer
-            from the welcome flow. All subsequent emails are cancelled.
+            <b>System Action:</b> The system marks the condition as "False" and
+            immediately removes the customer from the flow. Email 4 is
+            successfully cancelled.
           </td>
         </tr>
       </table>
       <div class="note" style="border-left-color: var(--accent); background: #e8f4ee;">
         <b>Status: PASSED.</b> This ensures buyers are seamlessly transitioned
         out of the nurture phase and won't receive unnecessary discount
-        reminders.
+        reminders after they have already converted.
       </div>
 
       <h2 id="trouble">If something doesn't work</h2>
