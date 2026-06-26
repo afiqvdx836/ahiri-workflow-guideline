@@ -1090,7 +1090,7 @@
         <b>Developer Note on Testing:</b> For the purpose of live UAT (User
         Acceptance Testing) and to validate the logic, the multi-day delay
         blocks have been compressed. The first two waits are set to
-        <b>2 minutes</b>, and the final wait is set to <b>24 hours</b>.
+        <b>2 minutes</b>, and the final wait is set to <b>6 hours</b>.
         Additionally, a safety filter is active so this test will only trigger
         for email addresses containing "+test". Before pushing to production,
         these delays will be reverted to the live schedule (3 days, 4 days,
@@ -1149,7 +1149,7 @@
         <div class="arrow">↓</div>
         <div class="fnode wait">
           <div class="kind">WAIT</div>
-          <div class="t">7 days (test: 24 hours)</div>
+          <div class="t">7 days (test: 6 hours)</div>
           <div class="b">
             Then check: has the customer made a purchase yet?
           </div>
@@ -1213,7 +1213,7 @@
       </table>
       <div class="shot">
         <img
-          src="screenshot/welcome_step2.png"
+          src="screenshot/welcome_step2_new.png"
           alt="Step 2 — entering the +test email address into the newsletter signup form"
         /><span>Step 2 — enter your +test email address and subscribe</span>
       </div>
@@ -1246,8 +1246,8 @@
         <tr>
           <td class="num">4</td>
           <td>
-            <b>Wait 24 Hours:</b> Because the final delay is set to 24 hours,
-            the flow will pause here. The next day, you will receive Email 4,
+            <b>Wait 6 Hours:</b> Because the final delay is set to 6 hours,
+            the flow will pause here. After 6 hours, you will receive Email 4,
             completing the test. (You can also verify this by checking the
             "Recent Runs" in Shopify Flow to see the workflow in a "Waiting"
             state).
@@ -1301,7 +1301,7 @@
         <tr>
           <td class="num">4</td>
           <td>
-            The system waits for the final delay (tested at 24 hours) and
+            The system waits for the final delay (tested at 6 hours) and
             checks the purchase history. With 0 orders found, it proceeds.
           </td>
         </tr>
@@ -1334,14 +1334,18 @@
         <tr>
           <td class="num">2</td>
           <td>
-            During the final 24-hour waiting period, the customer decides to
-            use their welcome discount and completes a purchase.
+            During the final 6-hour waiting period, the tester simulates a
+            purchase. In <b>Shopify Admin → Orders → Create order</b>, search
+            for the test customer, add a <b>Custom item</b> (name it anything,
+            e.g. "Test Item", priced at <b>$0.00</b>), then click
+            <b>Collect payment → Mark as paid</b>. This creates a real order
+            on the customer's account without any actual charge.
           </td>
         </tr>
         <tr>
           <td class="num">3</td>
           <td>
-            After 24 hours, the system resumes and runs its scheduled safety
+            After 6 hours, the system resumes and runs its scheduled safety
             check. It detects that the user now has 1 order on their account.
           </td>
         </tr>
