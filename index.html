@@ -293,6 +293,7 @@
         <a href="#seq2">Checkout reminder</a>
         <a href="#seq3">Browse abandonment</a>
         <a href="#seq4">Welcome series</a>
+        <a href="#seq5">First → Second order</a>
         <a href="#trouble">Troubleshooting</a>
         <a href="#golive">Go-live</a>
       </div>
@@ -1362,6 +1363,307 @@
         <b>Status: PASSED.</b> This ensures buyers are seamlessly transitioned
         out of the nurture phase and won't receive unnecessary discount
         reminders after they have already converted.
+      </div>
+
+      <h2 id="seq5">Sequence 5 · First Order to Second (Post-Purchase)</h2>
+      <p>
+        <b>Objective:</b> To verify that customers who make their very first
+        purchase — and specifically buy a designated "Hero" item — receive the
+        correct post-purchase nurture and wardrobe-building emails on schedule.
+      </p>
+      <div class="tech">
+        <b>Developer Note on Testing:</b> For the purpose of live UAT (User
+        Acceptance Testing), the multi-week delay blocks have been temporarily
+        compressed to <b>2 minutes</b> each. Additionally, a primary safety
+        filter is active so this test will only trigger for email addresses
+        containing <b>+test</b>. Before pushing to production, these delays
+        will be reverted to the live schedule (14 days, 7 days, 7 days, and
+        17 days).
+      </div>
+
+      <div class="flow">
+        <div class="fnode trigger">
+          <div class="kind">STARTS WHEN</div>
+          <div class="t">A customer places an order</div>
+          <div class="b">
+            The system checks if it is their very first order and if a "Hero"
+            tagged product was purchased.
+          </div>
+        </div>
+        <div class="arrow">↓</div>
+        <div class="fnode check">
+          <div class="kind">CHECK</div>
+          <div class="t">Is their email a +test address?</div>
+          <div class="b">
+            The safety fence. Real customers stop here while we test. Removed
+            at go-live.
+          </div>
+        </div>
+        <div class="arrow">↓</div>
+        <div class="fnode check">
+          <div class="kind">CHECK</div>
+          <div class="t">Is this their first-ever order (order count = 1)?</div>
+          <div class="b">
+            Returning customers are blocked — this flow is strictly for
+            first-time buyers.
+          </div>
+        </div>
+        <div class="arrow">↓</div>
+        <div class="fnode check">
+          <div class="kind">CHECK</div>
+          <div class="t">Does the order contain a "Hero" tagged product?</div>
+          <div class="b">
+            Only orders that include one of this season's designated Hero
+            items qualify for this curated wardrobe-building flow.
+          </div>
+        </div>
+        <div class="arrow">↓</div>
+        <div class="fnode wait">
+          <div class="kind">WAIT</div>
+          <div class="t">14 days (test: 2 minutes)</div>
+        </div>
+        <div class="arrow">↓</div>
+        <div class="fnode email">
+          <div class="kind">EMAIL 1</div>
+          <div class="t">Thank You + Care Tips</div>
+          <div class="b">
+            Sent from customer service — a warm thank-you with care
+            instructions for their Hero piece.
+          </div>
+        </div>
+        <div class="arrow">↓</div>
+        <div class="fnode wait">
+          <div class="kind">WAIT</div>
+          <div class="t">7 days (test: 2 minutes)</div>
+        </div>
+        <div class="arrow">↓</div>
+        <div class="fnode email">
+          <div class="kind">EMAIL 2</div>
+          <div class="t">3 Ways to Style</div>
+          <div class="b">
+            Styling inspiration — shows how to wear the Hero piece three
+            different ways.
+          </div>
+        </div>
+        <div class="arrow">↓</div>
+        <div class="fnode wait">
+          <div class="kind">WAIT</div>
+          <div class="t">7 days (test: 2 minutes)</div>
+        </div>
+        <div class="arrow">↓</div>
+        <div class="fnode email">
+          <div class="kind">EMAIL 3</div>
+          <div class="t">Review Request</div>
+          <div class="b">
+            Asks the customer to leave a review of their Hero purchase.
+          </div>
+        </div>
+        <div class="arrow">↓</div>
+        <div class="fnode wait">
+          <div class="kind">WAIT</div>
+          <div class="t">17 days (test: 2 minutes)</div>
+        </div>
+        <div class="arrow">↓</div>
+        <div class="fnode email">
+          <div class="kind">EMAIL 4</div>
+          <div class="t">Complete the Look (Second Purchase Prompt)</div>
+          <div class="b">
+            Final email nudging the customer to build their wardrobe with
+            complementary pieces. The flow ends here.
+          </div>
+        </div>
+      </div>
+
+      <h3>How to Test This Yourself (Manager / Client Guide)</h3>
+      <p>
+        Because this flow requires a very specific type of order, you must
+        trigger it using a <b>Draft Order</b> in the Shopify Admin.
+      </p>
+      <table>
+        <tr>
+          <th class="num">Step</th>
+          <th>What to do</th>
+        </tr>
+        <tr>
+          <td class="num">1</td>
+          <td>
+            <b>Go to Draft Orders:</b> In the Shopify Admin, navigate to
+            <b>Orders → Drafts</b> and click <b>Create order</b>.
+          </td>
+        </tr>
+        <tr>
+          <td class="num">2</td>
+          <td>
+            <b>Add a "Hero" Product:</b> Search for and add one of the
+            specific products designated for this season that has the
+            <b>Hero</b> tag applied to it in the backend.
+          </td>
+        </tr>
+        <tr>
+          <td class="num">3</td>
+          <td>
+            <b>Create a Test Customer:</b> Under the customer search bar,
+            type a brand new email address ensuring you add <b>+test</b>
+            (e.g. <b>sarah+testhero@gmail.com</b>) and select
+            <b>Create new customer</b>.
+            <i>Note: It must be a brand new email so the system registers
+            that they have exactly 1 order.</i>
+          </td>
+        </tr>
+        <tr>
+          <td class="num">4</td>
+          <td>
+            <b>Trigger the Flow:</b> Click <b>Collect payment</b> at the
+            bottom of the screen and choose <b>Mark as paid</b>.
+          </td>
+        </tr>
+        <tr>
+          <td class="num">5</td>
+          <td>
+            <b>Watch your inbox:</b><br />
+            Minute 2 — Email 1 (Thank You + Care) arrives.<br />
+            Minute 4 — Email 2 (3 Ways to Style) arrives.<br />
+            Minute 6 — Email 3 (Review Request) arrives.<br />
+            Minute 8 — Email 4 (Complete the Look) arrives, and the flow
+            ends.
+          </td>
+        </tr>
+      </table>
+
+      <h3>Test Scenario A: The "Happy Path" (First purchase, Hero item)</h3>
+      <table>
+        <tr>
+          <th class="num">Step</th>
+          <th>What happens</th>
+        </tr>
+        <tr>
+          <td class="num">1</td>
+          <td>
+            A new customer places their first order and purchases a "Hero"
+            tagged item.
+          </td>
+        </tr>
+        <tr>
+          <td class="num">→</td>
+          <td>
+            <b>System Action:</b> The system verifies the +test safety net,
+            verifies order count is exactly 1, and verifies the Hero tag is
+            present. The customer enters the flow.
+          </td>
+        </tr>
+        <tr>
+          <td class="num">2</td>
+          <td>The system waits 14 days (tested at 2 mins).</td>
+        </tr>
+        <tr>
+          <td class="num">→</td>
+          <td>
+            <b>System Action:</b> Email 1 (Thank You + Care from Customer
+            Service) is delivered.
+          </td>
+        </tr>
+        <tr>
+          <td class="num">3</td>
+          <td>The system waits 7 days (tested at 2 mins).</td>
+        </tr>
+        <tr>
+          <td class="num">→</td>
+          <td>
+            <b>System Action:</b> Email 2 (3 Ways to Style) is delivered.
+          </td>
+        </tr>
+        <tr>
+          <td class="num">4</td>
+          <td>The system waits 7 days (tested at 2 mins).</td>
+        </tr>
+        <tr>
+          <td class="num">→</td>
+          <td>
+            <b>System Action:</b> Email 3 (Review Request) is delivered.
+          </td>
+        </tr>
+        <tr>
+          <td class="num">5</td>
+          <td>The system waits 17 days (tested at 2 mins).</td>
+        </tr>
+        <tr>
+          <td class="num">→</td>
+          <td>
+            <b>System Action:</b> Email 4 (Second Purchase Prompt) is
+            delivered. The customer automatically exits the flow.
+          </td>
+        </tr>
+      </table>
+      <div class="note" style="border-left-color: var(--accent); background: #e8f4ee;">
+        <b>Status: PASSED.</b> All timing intervals, product tag conditions,
+        and email deliveries executed flawlessly during the live testing
+        window.
+      </div>
+
+      <h3>Test Scenario B: Repeat Customer (Fails Entry)</h3>
+      <table>
+        <tr>
+          <th class="num">Step</th>
+          <th>What happens</th>
+        </tr>
+        <tr>
+          <td class="num">1</td>
+          <td>
+            An existing customer (who has ordered before) places a new order
+            for a "Hero" item.
+          </td>
+        </tr>
+        <tr>
+          <td class="num">→</td>
+          <td>
+            <b>System Action:</b> The flow triggers, but checks the
+            customer's history. It sees <code>numberOfOrders</code> is 2 or
+            higher. The condition is marked as "False".
+          </td>
+        </tr>
+        <tr>
+          <td class="num">2</td>
+          <td>
+            The customer is immediately blocked from entering the sequence.
+          </td>
+        </tr>
+      </table>
+      <div class="note" style="border-left-color: var(--accent); background: #e8f4ee;">
+        <b>Status: PASSED.</b> Ensures returning customers do not get generic
+        "first purchase" messaging.
+      </div>
+
+      <h3>Test Scenario C: Non-Hero Item (Fails Entry)</h3>
+      <table>
+        <tr>
+          <th class="num">Step</th>
+          <th>What happens</th>
+        </tr>
+        <tr>
+          <td class="num">1</td>
+          <td>
+            A brand new customer places their first order, but they buy an
+            accessory or non-hero dress.
+          </td>
+        </tr>
+        <tr>
+          <td class="num">→</td>
+          <td>
+            <b>System Action:</b> The flow triggers, confirms it is their
+            first order, but checks the product tags. It does not find the
+            <code>Hero</code> tag. The condition is marked as "False".
+          </td>
+        </tr>
+        <tr>
+          <td class="num">2</td>
+          <td>
+            The customer is immediately blocked from entering the sequence.
+          </td>
+        </tr>
+      </table>
+      <div class="note" style="border-left-color: var(--accent); background: #e8f4ee;">
+        <b>Status: PASSED.</b> Ensures this highly curated, wardrobe-building
+        flow is strictly reserved for the primary seasonal styles.
       </div>
 
       <h2 id="trouble">If something doesn't work</h2>
